@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Task1"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="Generator" ResizeMode="NoResize" Width="798" Height="318">
+        Title="Generator" ResizeMode="NoResize" Width="690" Height="330">
     <Grid Margin="5,5,5,5">
         <GroupBox Header="Generation" Margin="5,5,5,5" HorizontalAlignment="Left" Width="304" VerticalAlignment="Top">
             <StackPanel Margin="5,5,5,5">
@@ -14,19 +14,20 @@
             </StackPanel>
         </GroupBox>
 
-        <GroupBox Header="Merging" Margin="10,78,0,0" HorizontalAlignment="Left" Width="299" VerticalAlignment="Top">
+        <GroupBox Header="Merging" Margin="5,78,0,0" HorizontalAlignment="Left" Width="304" VerticalAlignment="Top">
             <StackPanel Margin="5,5,5,5">
                 <Button x:Name="ButtonMerge" Content="Merge" HorizontalContentAlignment="Center" Click="ButtonMerge_Click" Height="25" Margin="5,5,5,5"/>
                 <Label Content="Delete lines containing:" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                 <TextBox x:Name="TextBoxDelStr" TextWrapping="Wrap" Height="25" VerticalContentAlignment="Center" RenderTransformOrigin="0.5,0.5" HorizontalScrollBarVisibility="Disabled" UseLayoutRounding="False" Margin="5,5,5,5"/>
+                <Label x:Name="MergeLog" Content="Waiting for merge" HorizontalAlignment="Center" Foreground="#CC8E0808"/>
             </StackPanel>
         </GroupBox>
-        <GroupBox Header="DataBase" Margin="0,5,5,0" HorizontalAlignment="Right" Width="359" VerticalAlignment="Top" Height="202">
+        <GroupBox Header="DataBase" Margin="0,5,5,0" HorizontalAlignment="Right" Width="359" VerticalAlignment="Top" Height="228">
             <Button x:Name="ButtonPullToTheDataBase" Content="Pull to the DataBase" Margin="5,5,5,5" VerticalAlignment="Bottom" Height="25" Click="ButtonPullToTheDataBase_Click"/>
         </GroupBox>
         <ProgressBar x:Name="ProgressBarRows" VerticalAlignment="Bottom" Height="20" Margin="5,5,5,5"/>
-        <Label x:Name="TextProgressRows" Margin="306,0,306,2" Content="" Panel.ZIndex="1" HorizontalContentAlignment="Center" Height="26" VerticalAlignment="Bottom"/>
-        <ProgressBar x:Name="ProgressBarFiles" VerticalAlignment="Bottom" Height="20" Margin="0,0,10,50"/>
-        <Label x:Name="TextProgressFiles" HorizontalAlignment="Center" Margin="0,219,0,0" VerticalAlignment="Top" Content="" Width="176" HorizontalContentAlignment="Center"/>
+        <Label x:Name="TextProgressRows" Margin="280,276,280,0" Content="" Panel.ZIndex="1" HorizontalContentAlignment="Center" Height="26" VerticalAlignment="Top"/>
+        <ProgressBar x:Name="ProgressBarFiles" Margin="5,0,5,33" Height="20" VerticalAlignment="Bottom"/>
+        <Label x:Name="TextProgressFiles" Margin="280,248,280,0" Content="" HorizontalContentAlignment="Center" Height="26" VerticalAlignment="Top"/>
     </Grid>
 </Window>
