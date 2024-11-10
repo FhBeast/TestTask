@@ -30,6 +30,8 @@ namespace Task1
         private readonly int _upperRangeOfEven = 100000000;
         private readonly int _upperRangeOfDecimal = 20;
 
+        private readonly int _notifyAfter = 1000;
+
         private const string _latinChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         private const string _russianChars = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЫЭЮЯабвгдежзиклмнопрстуфхцчшщыэюя";
 
@@ -134,6 +136,8 @@ namespace Task1
         {
             string[] inputFiles = Directory.GetFiles(Directory.GetCurrentDirectory() + "/" + _folderPath, "File_*.txt");
 
+            string delStr = TextBoxDelStr.Text;
+
             int totalDeletedLines = 0;
             using StreamWriter writer = new(_outputFile);
             foreach (string inputFile in inputFiles)
@@ -143,7 +147,7 @@ namespace Task1
                 int deletedLines = 0;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    if (line.Contains(TextBoxDelStr.Text))
+                    if (delStr != String.Empty && line.Contains(delStr))
                     {
                         deletedLines++;
                     }
@@ -153,6 +157,7 @@ namespace Task1
                     }
                 }
                 totalDeletedLines += deletedLines;
+                MergeLog.Content = $"{totalDeletedLines} lines were removed";
             }
         }
 
@@ -232,10 +237,10 @@ namespace Task1
 
                 using SqlBulkCopy bulkCopy = new(connection);
                 bulkCopy.DestinationTableName = "ImportedData";
-                bulkCopy.NotifyAfter = 1000;
+                bulkCopy.NotifyAfter = _notifyAfter;
                 bulkCopy.SqlRowsCopied += (sender, e) =>
                 {
-                    importedRows += 1000; 
+                    importedRows += _notifyAfter; 
                     Dispatcher.Invoke(() =>
                     {
                         ProgressBarRows.Value = importedRows;
