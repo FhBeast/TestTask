@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Data.SqlClient;
+using System;
+using System.Data;
+using System.IO;
+using System.Windows.Threading;
 
 namespace Task1.Util
 {
@@ -24,7 +24,7 @@ namespace Task1.Util
             DateTime start = DateTime.Now.AddYears(-5);
             int range = (DateTime.Today - start).Days;
             return start.AddDays(random.Next(range));
-        }
+        }        
 
         /// <summary>
         /// Generates a random string of specified length composed of Latin characters.
