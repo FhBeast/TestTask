@@ -14,8 +14,6 @@ using System.Linq;
 using System.Data;
 using Microsoft.Data.SqlClient;
 using Task1.Util;
-using static System.Windows.Forms.LinkLabel;
-using System.Numerics;
 
 namespace Task1
 {
