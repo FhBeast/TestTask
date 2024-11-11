@@ -228,6 +228,9 @@ namespace Task1
             UnblockButtons();
         }
 
+        /// <summary>
+        /// Disables all action buttons in the user interface.
+        /// </summary>
         private void BlockButtons()
         {
             ButtonGenerate.IsEnabled = false;
@@ -237,6 +240,9 @@ namespace Task1
             ButtonSumAndMedian.IsEnabled = false;
         }
 
+        /// <summary>
+        /// Enables all action buttons in the user interface.
+        /// </summary>
         private void UnblockButtons()
         {
             ButtonGenerate.IsEnabled = true;
