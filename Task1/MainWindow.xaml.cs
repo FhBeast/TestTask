@@ -56,11 +56,11 @@ namespace Task1
                 using StreamWriter writer = new(filePath, false, Encoding.UTF8);
                 for (int lineIndex = 0; lineIndex < _linesFileNumber; lineIndex++)
                 {
-                    string date = RandomUtils.GenerateRandomDate(random).ToString("yyyy-MM-dd");
-                    string latinChars = RandomUtils.GenerateRandomString(random, _latinCharsNumber);
-                    string russianChars = RandomUtils.GenerateRandomRussianString(random, _russianCharsNumber);
-                    int evenInt = RandomUtils.GenerateRandomEvenInt(random, 1, _upperRangeOfEven);
-                    double decimalNumber = RandomUtils.GenerateRandomDecimal(random, 1, _upperRangeOfDecimal);
+                    string date = RandomUtil.GenerateRandomDate(random).ToString("yyyy-MM-dd");
+                    string latinChars = RandomUtil.GenerateRandomString(random, _latinCharsNumber);
+                    string russianChars = RandomUtil.GenerateRandomRussianString(random, _russianCharsNumber);
+                    int evenInt = RandomUtil.GenerateRandomEvenInt(random, 1, _upperRangeOfEven);
+                    double decimalNumber = RandomUtil.GenerateRandomDecimal(random, 1, _upperRangeOfDecimal);
                     string line = $"{date}||{latinChars}||{russianChars}||{evenInt}||{decimalNumber:F8}";
                     writer.WriteLine(line);
                 }
