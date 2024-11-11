@@ -112,7 +112,7 @@ namespace Task1
         /// </summary>
         /// <param name="filePath">The path to the file containing the data to import.</param>
         /// <returns>A task that represents the asynchronous operation of data import.</returns>
-        private async void ImportFileToDatabase(string filePath)
+        private void ImportFileToDatabase(string filePath)
         {
             DataTable dataTable = new();
             dataTable.Columns.Add("ID", typeof(int));
