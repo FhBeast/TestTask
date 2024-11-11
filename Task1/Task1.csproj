@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="img\bad.png" />
-    <None Remove="img\good.png" />
+    <None Remove="Img\bad.png" />
+    <None Remove="Img\good.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,10 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="img\bad.png">
+    <Resource Include="Img\bad.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="img\good.png">
+    <Resource Include="Img\good.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
