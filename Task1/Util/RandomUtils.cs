@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Task1.Util
 {
+    /// <summary>
+    /// Provides methods to generate random values.
+    /// </summary>
     public static class RandomUtils
     {
         private const string _latinChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
