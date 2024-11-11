@@ -14,8 +14,8 @@ using System.Linq;
 using System.Data;
 using Microsoft.Data.SqlClient;
 using Task1.Util;
-using static System.Windows.Forms.LinkLabel;
-using System.Numerics;
+using Task1.Model;
+using System.Windows.Threading;
 
 namespace Task1
 {
@@ -26,6 +26,7 @@ namespace Task1
     {
         private readonly int _filesNumber = 100;
         private readonly int _linesFileNumber = 100000;
+
         private readonly int _latinCharsNumber = 10;
         private readonly int _russianCharsNumber = 10;
         private readonly int _upperRangeOfEven = 100000000;
@@ -37,6 +38,8 @@ namespace Task1
         private readonly string _folderPath = "GeneratedFiles";
 
         private readonly string _connectionString = "Server=localhost;Database=TextFileDataDB;Trusted_Connection=True;TrustServerCertificate=True;";
+        private readonly string _procedureCalcName = "CalculateSumAndMedian";
+        private readonly string _procedureClearDBName = "TruncateImportedData";
 
         public MainWindow()
         {
@@ -46,57 +49,40 @@ namespace Task1
         /// <summary> 
         /// Generates 100 text files with 100,000 lines each.
         /// </summary>
-        private void ButtonGenerate_Click(object sender, RoutedEventArgs e)
+        private async void ButtonGenerate_Click(object sender, RoutedEventArgs e)
         {
-            Random random = new();
-            Directory.CreateDirectory(_folderPath);
-            for (int fileIndex = 1; fileIndex <= _filesNumber; fileIndex++)
+            BlockButtons();
+
+            await Task.Run(() =>
             {
-                string filePath = System.IO.Path.Combine(_folderPath, $"File_{fileIndex}.txt");
-                using StreamWriter writer = new(filePath, false, Encoding.UTF8);
-                for (int lineIndex = 0; lineIndex < _linesFileNumber; lineIndex++)
-                {
-                    string date = RandomUtils.GenerateRandomDate(random).ToString("yyyy-MM-dd");
-                    string latinChars = RandomUtils.GenerateRandomString(random, _latinCharsNumber);
-                    string russianChars = RandomUtils.GenerateRandomRussianString(random, _russianCharsNumber);
-                    int evenInt = RandomUtils.GenerateRandomEvenInt(random, 1, _upperRangeOfEven);
-                    double decimalNumber = RandomUtils.GenerateRandomDecimal(random, 1, _upperRangeOfDecimal);
-                    string line = $"{date}||{latinChars}||{russianChars}||{evenInt}||{decimalNumber:F8}";
-                    writer.WriteLine(line);
-                }
-            }
-        }        
+                FileGenerator.GenerateFiles(_folderPath,
+                                        _filesNumber,
+                                        _linesFileNumber,
+                                        _latinCharsNumber,
+                                        _russianCharsNumber,
+                                        _upperRangeOfEven,
+                                        _upperRangeOfDecimal);
+            });
+
+            UnblockButtons();
+        }
 
         /// <summary>
         /// Merges multiple text files into one, removing lines that contain the specified character combination.
         /// </summary>
-        private void ButtonMerge_Click(object sender, RoutedEventArgs e)
+        private async void ButtonMerge_Click(object sender, RoutedEventArgs e)
         {
-            string[] inputFiles = Directory.GetFiles(Directory.GetCurrentDirectory() + "/" + _folderPath, "File_*.txt");
+            BlockButtons();
+            int removedLinesNumber = 0;
+            string removingText = TextBoxDelStr.Text;
 
-            string delStr = TextBoxDelStr.Text;
-
-            int totalDeletedLines = 0;
-            using StreamWriter writer = new(_outputFile);
-            foreach (string inputFile in inputFiles)
+            await Task.Run(() =>
             {
-                using StreamReader reader = new(inputFile);
-                string line;
-                int deletedLines = 0;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    if (delStr != String.Empty && line.Contains(delStr))
-                    {
-                        deletedLines++;
-                    }
-                    else
-                    {
-                        writer.WriteLine(line);
-                    }
-                }
-                totalDeletedLines += deletedLines;
-                MergeLog.Content = $"{totalDeletedLines} lines were removed";
-            }
+                removedLinesNumber = FileGenerator.MergeFiles(_folderPath, _outputFile, removingText);
+            });
+
+            MergeLog.Content = $"{removedLinesNumber} lines were removed";
+            UnblockButtons();
         }
 
         /// <summary>
@@ -104,29 +90,21 @@ namespace Task1
         /// </summary>
         private async void ButtonPullToTheDataBase_Click(object sender, RoutedEventArgs e)
         {
+            BlockButtons();
+
             string[] inputFiles = Directory.GetFiles(Directory.GetCurrentDirectory() + "/" + _folderPath, "File_*.txt");
+            ProgressBarFiles.Maximum = inputFiles.Length;
 
             await Task.Run(() =>
             {
-                int totalFiles = inputFiles.Length;
-                int importedFiles = 0;
-
-                Dispatcher.Invoke(() =>
-                {
-                    ProgressBarFiles.Maximum = totalFiles;
-                });
-
                 foreach (string inputFile in inputFiles)
                 {
                     ImportFileToDatabase(inputFile);
-                    importedFiles++;
                 }
-
-                Dispatcher.Invoke(() =>
-                {
-                    ProgressBarFiles.Value = 0;
-                });
             });
+
+            ProgressBarFiles.Value = 0;
+            UnblockButtons();
         }
 
         /// <summary> 
@@ -134,64 +112,61 @@ namespace Task1
         /// </summary>
         /// <param name="filePath">The path to the file containing the data to import.</param>
         /// <returns>A task that represents the asynchronous operation of data import.</returns>
-        private async void ImportFileToDatabase(string filePath)
+        private void ImportFileToDatabase(string filePath)
         {
-            await Task.Run(() =>
+            DataTable dataTable = new();
+            dataTable.Columns.Add("ID", typeof(int));
+            dataTable.Columns.Add("Date", typeof(DateTime));
+            dataTable.Columns.Add("LatinString", typeof(string));
+            dataTable.Columns.Add("CyrillicString", typeof(string));
+            dataTable.Columns.Add("EvenNumber", typeof(int));
+            dataTable.Columns.Add("FloatNumber", typeof(float));
+
+            int totalRows = 0;
+            int importedRows = 0;
+            string line;
+
+            using StreamReader reader = new(filePath);
+            while ((line = reader.ReadLine()) != null)
             {
-                DataTable dataTable = new();
-                dataTable.Columns.Add("ID", typeof(int));
-                dataTable.Columns.Add("Date", typeof(DateTime));
-                dataTable.Columns.Add("LatinString", typeof(string));
-                dataTable.Columns.Add("CyrillicString", typeof(string));
-                dataTable.Columns.Add("EvenNumber", typeof(int));
-                dataTable.Columns.Add("FloatNumber", typeof(float));
-                int totalRows = 0;
-                int importedRows = 0;
+                string[] parts = line.Split("||", StringSplitOptions.None);
+                DataRow row = dataTable.NewRow();
+                row["ID"] = 1;
+                row["Date"] = DateTime.Parse(parts[0]);
+                row["LatinString"] = parts[1];
+                row["CyrillicString"] = parts[2];
+                row["EvenNumber"] = int.Parse(parts[3]);
+                row["FloatNumber"] = float.Parse(parts[4]);
+                dataTable.Rows.Add(row); totalRows++;
+            }
 
-                string line;
-                using StreamReader reader = new(filePath);                
-                while ((line = reader.ReadLine()) != null)
-                {
-                    string[] parts = line.Split("||", StringSplitOptions.None);
+            Dispatcher.Invoke(() =>
+            {
+                ProgressBarRows.Maximum = totalRows;
+            });
 
-                    DataRow row = dataTable.NewRow();
-                    row["ID"] = 1;
-                    row["Date"] = DateTime.Parse(parts[0]);
-                    row["LatinString"] = parts[1];
-                    row["CyrillicString"] = parts[2];
-                    row["EvenNumber"] = int.Parse(parts[3]);
-                    row["FloatNumber"] = float.Parse(parts[4]);
+            using SqlConnection connection = new(_connectionString);
+            connection.Open();
 
-                    dataTable.Rows.Add(row); totalRows++;
-                }
-
-                Dispatcher.Invoke(() =>
-                {
-                    ProgressBarRows.Maximum = totalRows;
-                });
-
-                using SqlConnection connection = new(_connectionString);
-                connection.Open();
-
-                using SqlBulkCopy bulkCopy = new(connection);
-                bulkCopy.DestinationTableName = "ImportedData";
-                bulkCopy.NotifyAfter = _notifyAfter;
-                bulkCopy.SqlRowsCopied += (sender, e) =>
-                {
-                    importedRows += _notifyAfter; 
-                    Dispatcher.Invoke(() =>
-                    {
-                        ProgressBarRows.Value = importedRows;
-                    });
-                };
-
-                bulkCopy.WriteToServer(dataTable);
+            using SqlBulkCopy bulkCopy = new(connection);
+            bulkCopy.DestinationTableName = "ImportedData";
+            bulkCopy.NotifyAfter = _notifyAfter;
+            bulkCopy.SqlRowsCopied += (sender, e) =>
+            {
+                importedRows += _notifyAfter;
 
                 Dispatcher.Invoke(() =>
                 {
-                    ProgressBarRows.Value = 0;
-                    ProgressBarFiles.Value++;
+                    ProgressBarRows.Value = importedRows;
                 });
+            };
+
+            bulkCopy.WriteToServer(dataTable);
+
+            Dispatcher.Invoke(() =>
+            {
+                ProgressBarRows.Value = 0;
+                ProgressBarFiles.Value++;
             });
         }
 
@@ -209,6 +184,66 @@ namespace Task1
         private void ProgressBarFiles_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             TextProgressFiles.Content = $"{ProgressBarFiles.Value} of {ProgressBarFiles.Maximum}";
+        }
+
+        /// <summary>
+        /// Calls a stored procedure to calculate the sum of even numbers and the median of decimal numbers.
+        /// Displays the results in the ProcedureOutput text block.
+        /// </summary>
+        private async void ButtonSumAndMedian_Click(object sender, RoutedEventArgs e)
+        {
+            BlockButtons();
+
+            await Task.Run(() =>
+            {
+                DatabaseManager dbManager = new(_connectionString);
+                DataTable resultTable = dbManager.CallProcedure(_procedureCalcName);
+
+                if (resultTable.Rows.Count > 0)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        ProcedureOutput.Text = $"Sum of an even numbers: {resultTable.Rows[0]["SumEvenNumber"]}\r"
+                                               + $"The decimal madian: {resultTable.Rows[0]["MedianFloatNumber"]}";
+                    });
+                }
+            });
+
+            UnblockButtons();
+        }
+
+        /// <summary>
+        /// Calls a stored procedure to truncate the ImportedData table in the database.
+        /// </summary>
+        private async void ButtomDeleteFromDB_Click(object sender, RoutedEventArgs e)
+        {
+            BlockButtons();
+
+            await Task.Run(() =>
+            {
+                DatabaseManager dbManager = new(_connectionString);
+                dbManager.CallProcedure(_procedureClearDBName);
+            });
+
+            UnblockButtons();
+        }
+
+        private void BlockButtons()
+        {
+            ButtonGenerate.IsEnabled = false;
+            ButtonMerge.IsEnabled = false;
+            ButtonPullToTheDataBase.IsEnabled = false;
+            ButtomDeleteFromDB.IsEnabled = false;
+            ButtonSumAndMedian.IsEnabled = false;
+        }
+
+        private void UnblockButtons()
+        {
+            ButtonGenerate.IsEnabled = true;
+            ButtonMerge.IsEnabled = true;
+            ButtonPullToTheDataBase.IsEnabled = true;
+            ButtomDeleteFromDB.IsEnabled = true;
+            ButtonSumAndMedian.IsEnabled = true;
         }
     }
 }
